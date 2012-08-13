@@ -65,10 +65,11 @@ function vre/knife/create() {
   # command loop
   local _cmd=${1}
   local _type=""
+  if test "${_type}" = "admin" ; then
+    _type="-a"
+  fi
   case "${_cmd}" in
-    admin)
-      _type="-a"
-    user)
+    user|admin)
       shift
       local _user=${1}
       shift
