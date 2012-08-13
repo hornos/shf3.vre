@@ -85,7 +85,7 @@ EOF
 }
 
 function vre/knife/create() {
-  local _env=${1%%/:-knife}
+  local _env=${1:-knife}
   shift
   local _opts=$*
 
@@ -120,7 +120,6 @@ function vre/knife/create() {
     ;;
   esac
 
-
   local _remote=$(u/split "${_env}" 1 "/")
   local _env=$(u/split "${_env}" 2 "/")
 
@@ -148,6 +147,7 @@ function vre/knife/create() {
   sys/dir/mk "cookbooks"
 
   # completition
+  echo ""
   answer "Install bash completion?"
   if succeed $? ; then
     sys/dir/mk "${vre_knife_cmp}"
@@ -158,9 +158,11 @@ function vre/knife/create() {
     sys/dir/mk "${_chef}/.completion_cache"
   fi
 
+  echo ""
   if test "${_env}" != "${_remote}" ; then
     answer "Initialize from ${_remote}?"
     if failed $? ; then return ; fi
+    cd ..
     sshtx get ${_remote} shf3.vre/${vre_knife_mid}/${_env}
   fi
 }

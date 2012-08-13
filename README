@@ -18,7 +18,6 @@ H$ mkdir knife
 H$ cd knife
 ## Create and get the macbook knife from vadmin
 H$ vre create knife vadmin/macbook
-
-
-H$ sshtx get vadmin shf3.vre/clients/macbook
+H$ vre login macbook
+K$ knife client list
 

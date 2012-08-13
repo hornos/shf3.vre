@@ -39,13 +39,8 @@ function vre/login() {
 function vre/create() {
   local _m=$(basename ${1:-python})
   shift
-  local _env=$(basename ${1:-python})
+  local _env=${1:-python}
   shift
-
-  if directory "./${_env}" ; then
-    msg "Found virtual environment: ${_env}"
-    $failure
-  fi
 
   import vre/${_m}
   if failed $? ; then
