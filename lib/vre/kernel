@@ -42,10 +42,10 @@ function vre/create() {
   local _env=$(basename ${1:-python})
   shift
 
-  if directory "./${_env}" ; then
-    msg "Found virtual environment: ${_env}"
-    $failure
-  fi
+#  if directory "./${_env}" ; then
+#    msg "Found virtual environment: ${_env}"
+#    $failure
+#  fi
 
   import vre/${_m}
   if failed $? ; then
