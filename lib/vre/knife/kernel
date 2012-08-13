@@ -63,20 +63,20 @@ function vre/knife/create() {
   local _opts=$*
 
   # command loop
-  local _cmd=${1}
+  local _cmd=${_env}
   local _type=""
   if test "${_type}" = "admin" ; then
     _type="-a"
   fi
   case "${_cmd}" in
     user|admin)
-      shift
       local _user=${1}
       shift
       local _opts=$*
       cd ${gdn}/../clients
+      if empty "${_user}" ; then $failure ; fi
       if directory "${_user}" ; then
-        msg "Cleint found: ${_user}"
+        msg "Client found: ${_user}"
         $failure
       fi
       import sys/dir
