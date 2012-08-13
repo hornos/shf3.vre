@@ -1,3 +1,30 @@
+function vre/knife/config() {
+  local _out="${1:-knife.rb}"
+  local _env="${2:-$USER}"
+  local _srv="${3:-localhost:4000}"
+
+  cat << EOF > "${_out}"
+node_name "${_env}"
+
+client_key "#{File.dirname(__FILE__)}/client.pem"
+chef_server_url "http://${_srv}"
+
+validation_client_name "chef-validator"
+validation_key "#{File.dirname(__FILE__)}/validation.pem"
+
+cookbook_path [ "#{File.dirname(__FILE__)}/../cookbooks" ]
+cookbook_license "gplv3"
+# cookbook_copyright "YOUR_COMPANY_NAME"
+# cookbook_email "YOUR_EMAIL"
+
+cache_type 'BasicFile'
+cache_options({ :path => "#{File.dirname(__FILE__)}/checksums" })
+
+confd = File.join(File.dirname(__FILE__), "conf.d", "*.rb")
+Dir.glob(confd).each {|file| Chef::Config.from_file(file)}
+EOF
+}
+
 function vre/knife/check() {
   local _d="${1:-.}"
   local _a=""
@@ -80,12 +107,15 @@ function vre/knife/create() {
         $failure
       fi
       import sys/dir
-      sys/dir/mk "${_user}/.chef"
-      cd "${_user}/.chef"
+      local _chef="${_user}/.chef"
+      sys/dir/mk "${_chef}"
+      cd "${_chef}"
       answer "Create Knife user ${_user}?"
       if failed $? ; then $failure ; fi
       ${vre_knife} client create "${_user}" -d ${_type} -f "./client.pem"
       ${vre_knife} client show "${_user}" > ./client.txt
+      cp ${HOME}/.chef/validation.pem .
+      vre/knife/config "knife.rb" "${_user}" "${HOSTNAME}:4000"
       return $?
     ;;
   esac
@@ -112,27 +142,7 @@ function vre/knife/create() {
 
   msg "Creating configuration"
   # defaults
-cat << EOF > "${_chef}/knife.rb"
-node_name "${_env}"
-
-client_key "#{File.dirname(__FILE__)}/client.pem"
-chef_server_url "http://localhost:4000"
-
-validation_client_name "chef-validator"
-validation_key "#{File.dirname(__FILE__)}/validation.pem"
-
-cookbook_path [ "#{File.dirname(__FILE__)}/../cookbooks" ]
-cookbook_license "gplv3"
-# cookbook_copyright "YOUR_COMPANY_NAME"
-# cookbook_email "YOUR_EMAIL"
-
-cache_type 'BasicFile'
-cache_options({ :path => "#{File.dirname(__FILE__)}/checksums" })
-
-confd = File.join(File.dirname(__FILE__), "conf.d", "*.rb")
-Dir.glob(confd).each {|file| Chef::Config.from_file(file)}
-EOF
-
+  vre/knife/config "${_chef}/knife.rb" "${_env}" "${HOSTNAME}:4000"
   sys/dir/mk "${_chef}/checksums"
   sys/dir/mk "${_chef}/conf.d"
 

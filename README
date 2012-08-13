@@ -9,10 +9,10 @@ http://wiki.opscode.com/display/chef/Installing+Chef+Server+Manually
 A$ install_chef_server
 A$ install_chef_local_admin
 A$ vre create knife admin macbook
+# TODO: create login package
 
 H$ mkdir knifes
 H$ cd knifes
-H$ vre create knife server
-H$ cd server/.chef
-H$ ssthx get shf3.vre/clients/laptop/client.pem
+H$ vre create knife macbook
+H$ sshtx get vadmin shf3.vre/clients/macbook
 
