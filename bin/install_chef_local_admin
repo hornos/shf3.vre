@@ -1,0 +1,12 @@
+#!/bin/bash
+# http://wiki.opscode.com/display/chef/Installing+Chef+Server+Manually
+
+source $(dirname ${BASH_SOURCE})/../../shf3/lib/header
+
+answer "Setup Knife admin?"
+if succeed $? ; then
+  mkdir -p ~/.chef
+  u/sudo cp /etc/chef/validation.pem /etc/chef/webui.pem ~/.chef
+  u/sudo chown -R $USER ~/.chef
+  knife configure -i
+fi

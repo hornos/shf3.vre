@@ -61,6 +61,34 @@ function vre/knife/create() {
   local _env=${1%%/:-knife}
   shift
   local _opts=$*
+
+  # command loop
+  local _cmd=${1}
+  local _type=""
+  case "${_cmd}" in
+    admin)
+      _type="-a"
+    user)
+      shift
+      local _user=${1}
+      shift
+      local _opts=$*
+      cd ${gdn}/../clients
+      if directory "${_user}" ; then
+        msg "Cleint found: ${_user}"
+        $failure
+      fi
+      import sys/dir
+      sys/dir/mk "${_user}"
+      cd "${_user}"
+      answer "Create Knife user ${_user}?"
+      if failed $? ; then $failure ; fi
+      ${vre_knife} client create "${_user}" -d ${_type} -f "./client.pem"
+      ${vre_knife} client show "${_user}" > ./client.txt
+      return $?
+    ;;
+  esac
+
   local _cmp=false
   if ns/op "${_env}" "+" ; then
     _cmp=true
