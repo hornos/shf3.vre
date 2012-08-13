@@ -92,7 +92,7 @@ function vre/knife/create() {
   # command loop
   local _cmd=${_env}
   local _type=""
-  if test "${_type}" = "admin" ; then
+  if test "${_cmd}" = "admin" ; then
     _type="-a"
   fi
   case "${_cmd}" in
