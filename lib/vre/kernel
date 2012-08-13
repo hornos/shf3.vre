@@ -1,0 +1,69 @@
+function vre/envs() {
+  local i
+  for i in $(ls -d ${gdn}/../lib/vre/*/) ; do
+    if ! readable "${i}/kernel" ; then continue ; fi
+    echo $(basename ${i})
+  done
+}
+
+function vre/list() {
+  local _envs=$(vre/envs)
+  if empty "${_envs}" ; then $failure ; fi
+  local i
+  for i in ${_envs} ; do
+    import vre/${i}
+    vre/${i}/list
+  done
+}
+
+function vre/login() {
+  local _env=${1}
+  local _envs=$(vre/envs)
+  local _found=false
+  if empty ${_env} || \
+     empty "${_envs}" ; then $failure ; fi
+  local i
+  for i in ${_envs} ; do
+    import vre/${i}
+    if vre/${i}/check "${_env}" ; then
+      vre/${i}/login "${_env}"
+      _found=true
+      break
+    fi
+  done
+  if ! ${_found} ; then
+    echo "Unknow environment: ${_env}"
+  fi
+}
+
+function vre/create() {
+  local _m=$(basename ${1:-python})
+  shift
+  local _env=$(basename ${1:-python})
+  shift
+
+  if directory "./${_env}" ; then
+    msg "Found virtual environment: ${_env}"
+    $failure
+  fi
+
+  import vre/${_m}
+  if failed $? ; then
+    msg "Unknown environment: ${_m}"
+    $failure
+  fi
+
+  vre/${_m}/create "${_env}" $*
+}
+
+function vre/install() {
+  echo ""
+}
+
+function vre/source() {
+  echo ""
+}
+
+function vre/packages() {
+  echo ""
+}

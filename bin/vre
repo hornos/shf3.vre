@@ -1,0 +1,53 @@
+#!/bin/bash
+source $(dirname ${BASH_SOURCE})/../../shf3/lib/header
+include $(dirname ${BASH_SOURCE})/../lib
+
+import gui
+import vre
+
+function help/vre() {
+  cat <<EOF
+Usage: ${gbn} command arg
+## Environment
+  list         - list virtual environments in CWD
+  login   env  - login to virtual env
+  exit         - exists
+  create  env  - create virtual env
+  install env pkgs  - install packages with pip
+  source  env uri   - install package from uri
+  pkg     env  - list packages if yolk is installed
+EOF
+  exit 1
+}
+
+### args
+_cmd=$1
+shift
+_arg=$*
+
+case "${_cmd}" in
+  ls|list)
+    vre/list
+    ;;
+  login)
+    vre/login ${_arg}
+    ;;
+  mk|create)
+    vre/create ${_arg}
+    ;;
+  in|install)
+    vre/install ${_arg}
+    ;;
+  src|source)
+    vre/source ${_arg}
+    ;;
+  pkgs|packages)
+    vre/pkg ${_arg}
+    ;;
+  exit)
+    exit
+    ;;
+  help|-h|*)
+    help/vre
+    ;;
+esac

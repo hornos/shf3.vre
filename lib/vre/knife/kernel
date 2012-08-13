@@ -1,0 +1,121 @@
+function vre/knife/check() {
+  local _d="${1:-.}"
+  local _a=""
+  local i
+  _a="${_d}/${vre_knife_chk}"
+  if ! readable "${_a}" ; then $failure ; fi
+  $success
+}
+
+function vre/knife/list() {
+  local _d="${1:-.}"
+  local _a=""
+  local _first=true
+  local i
+  for i in $(ls -d ${_d}/*) ; do
+    if ! vre/knife/check "${i}" ; then
+      continue
+    fi
+    i=$(basename "${i%%/}")
+    if $first ; then
+      echo "Virtual Knife Environments:"
+      first=false
+    fi
+    du -sh "${i}"
+  done
+}
+
+function vre/knife/exit() {
+  u/rm "${vre_knife_rc}"
+}
+
+function vre/knife/login() {
+  local _env=${1%%/:-knife}
+  if ! directory "${_env}" ; then $failure ; fi
+
+  answer "Login to Knife environment ${_env}?"
+  if failed $? ; then $failure ; fi
+
+  trap vre/knife/exit INT TERM EXIT
+
+  cd "${_env}"
+  local _cmp=""
+  if readable "${vre_knife_cmp}/knife/knife" ; then
+    _cmp="KNIFE_HOME=${PWD}"
+    _cmp="${_cmp}; source ${vre_knife_cmp}/knife/knife"
+    _cmp="${_cmp}; source ${vre_knife_cmp}/bash-completion/bash_completion"
+  fi
+  local _home=$PWD
+  cat <<EOF > "${vre_knife_rc}"
+PS1="VR KNIFE[${_env}] \W (\$?)\\$ "
+echo "Type exit to exit."
+${_cmp}
+alias install="knife cookbook site install"
+alias home="cd ${_home}"
+alias
+EOF
+  bash --noprofile --rcfile "${vre_knife_rc}"
+}
+
+function vre/knife/create() {
+  local _env=${1%%/:-knife}
+  shift
+  local _opts=$*
+  local _cmp=false
+  if ns/op "${_env}" "+" ; then
+    _cmp=true
+  fi
+  _env=$(ns/op/value "${_env}" "+")
+  if directory "${_env}" ; then $failure ; fi
+
+  answer "Create Knife Environment ${_env}${_msg}?"
+  if failed $? ; then $failure ; fi
+
+  # ${vre_python} ${_opts} ${_env}
+  import sys/dir
+  # sys/dir/mk "${_env}"
+  git clone ${vre_knife_repo} "${_env}"
+
+  cd "${_env}"
+
+  local _chef="./.chef"
+  sys/dir/mk "${_chef}"
+
+  msg "Creating configuration"
+  # defaults
+cat << EOF > "${_chef}/knife.rb"
+node_name "${_env}"
+
+client_key "#{File.dirname(__FILE__)}/client.pem"
+chef_server_url "http://localhost:4000"
+
+validation_client_name "chef-validator"
+validation_key "#{File.dirname(__FILE__)}/validation.pem"
+
+cookbook_path [ "#{File.dirname(__FILE__)}/../cookbooks" ]
+cookbook_license "gplv3"
+# cookbook_copyright "YOUR_COMPANY_NAME"
+# cookbook_email "YOUR_EMAIL"
+
+cache_type 'BasicFile'
+cache_options({ :path => "#{File.dirname(__FILE__)}/checksums" })
+
+confd = File.join(File.dirname(__FILE__), "conf.d", "*.rb")
+Dir.glob(confd).each {|file| Chef::Config.from_file(file)}
+EOF
+
+  sys/dir/mk "${_chef}/checksums"
+  sys/dir/mk "${_chef}/conf.d"
+
+  sys/dir/mk "cookbooks"
+
+  # completition
+  if ${_cmp} ; then
+    sys/dir/mk "${vre_knife_cmp}"
+    cd "${vre_knife_cmp}"
+    git clone ${vre_knife_cmp_bash}
+    git clone ${vre_knife_cmp_git} knife
+    cd ..
+    sys/dir/mk "${_chef}/.completion_cache"
+  fi
+}

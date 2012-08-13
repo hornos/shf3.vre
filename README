@@ -1,0 +1,5 @@
+Virtual Environments
+
+.bashrc:
+source $HOME/shf3.vre/bin/shfrc
+

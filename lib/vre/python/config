@@ -1,0 +1,5 @@
+vre_python="virtualenv"
+vre_python_chk="bin/activate"
+vre_python_pip="pip"
+vre_python_rc=".${gbn}.python.$$"
+vre_python_pkg="bin/yolk"

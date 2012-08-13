@@ -1,0 +1,111 @@
+function vre/python/check() {
+  local _d="${1:-.}"
+  local _a=""
+  local i
+  _a="${_d}/${vre_python_chk}"
+  if ! readable "${_a}" ; then $failure ; fi
+  cat "${_a}" | \
+  grep VIRTUAL &> /dev/null
+  if failed $? ; then $failure ; fi
+  $success
+}
+
+function vre/python/list() {
+  local _d="${1:-.}"
+  local _a=""
+  local _first=true
+  local i
+  for i in $(ls -d ${_d}/*) ; do
+    if ! vre/python/check "${i}" ; then
+      continue
+    fi
+    i=$(basename "${i%%/}")
+    if $first ; then
+      echo "Virtual Python Environments:"
+      first=false
+    fi
+    du -sh "${i}"
+  done
+}
+
+function vre/python/exit() {
+  u/rm "${vre_python_rc}"
+}
+
+function vre/python/login() {
+  local _env=${1%%/:-python}
+  if ! directory "${_env}" ; then $failure ; fi
+
+  answer "Login to Python environment ${_env}?"
+  if failed $? ; then $failure ; fi
+
+  trap vre/python/exit INT TERM EXIT
+
+  cd "${_env}"
+  cat <<EOF > "${vre_python_rc}"
+source bin/activate
+PS1="VR PYTHON[${_env}] \W (\$?)\\$ "
+alias install="easy_install"
+alias packages="yolk -l"
+echo "Type exit to exit."
+alias
+EOF
+  bash --noprofile --rcfile "${vre_python_rc}"
+}
+
+function vre/python/create() {
+  local _env=${1%%/:-python}
+  shift
+  local _opts=$*
+  local _msg=""
+  if ! ns/op "${_env}" "+" ; then
+    _opts="--no-site-packages ${_opts}"
+    _msg=" (no site packages)"
+  fi
+  _env=$(ns/op/value "${_env}" "+")
+  if directory "${_env}" ; then $failure ; fi
+
+  # echo "${vre_python} ${_opts} ${_env}"
+  answer "Create Python Environment ${_env}${_msg}?"
+  if failed $? ; then $failure ; fi
+
+  ${vre_python} ${_opts} ${_env}
+}
+
+function vre/python/__install() {
+  local _in={1:-U}
+  shift
+  local _env=${1%%/}
+  shift
+  local _pkgs=$*
+  if ! directory "${_env}" || \
+     empty "${_pkgs}" ; then
+    $failure
+  fi
+
+  answer "Install into ${_env}: ${_pkgs}?"
+  if failed $? ; then $failure ; fi
+  ${vre_python_pip} -E ${_env} install -${_in} ${_pkgs}
+}
+
+function vre/python/install() {
+  vre/python/__install U $*
+}
+
+function vre/python/source() {
+  vre/python/__install e $*
+}
+
+function py/env/packages() {
+  local _env=${1%%/}
+  shift
+  local _cmd=${*:--l}
+  if ! directory "${_env}" ; then $failure ; fi
+
+  local _pkg="${_env}/${vre_python_pkg}"
+  if ! executable "${_pkg}" ; then
+    msg "Not found: ${_pkg}"
+    $failure
+  fi
+  ${_pkg} ${_cmd}
+}
