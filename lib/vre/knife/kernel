@@ -81,7 +81,7 @@ function vre/knife/create() {
       fi
       import sys/dir
       sys/dir/mk "${_user}/.chef"
-      cd "${_user}"
+      cd "${_user}/.chef"
       answer "Create Knife user ${_user}?"
       if failed $? ; then $failure ; fi
       ${vre_knife} client create "${_user}" -d ${_type} -f "./client.pem"
