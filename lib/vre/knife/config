@@ -1,4 +1,5 @@
 vre_knife="knife"
+vre_knife_mid="mid/knife"
 vre_knife_chk=".chef/knife.rb"
 vre_knife_rc=".${gbn}.knife.$$"
 vre_knife_repo="git://github.com/opscode/chef-repo.git"

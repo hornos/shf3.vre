@@ -100,7 +100,7 @@ function vre/knife/create() {
       local _user=${1}
       shift
       local _opts=$*
-      cd ${gdn}/../clients
+      cd ${gdn}/../${vre_knife_mid}
       if empty "${_user}" ; then $failure ; fi
       if directory "${_user}" ; then
         msg "Client found: ${_user}"
@@ -120,11 +120,10 @@ function vre/knife/create() {
     ;;
   esac
 
-  local _cmp=false
-  if ns/op "${_env}" "+" ; then
-    _cmp=true
-  fi
-  _env=$(ns/op/value "${_env}" "+")
+
+  local _remote=$(u/split "${_env}" 1 "/")
+  local _env=$(u/split "${_env}" 2 "/")
+
   if directory "${_env}" ; then $failure ; fi
 
   answer "Create Knife Environment ${_env}${_msg}?"
@@ -149,12 +148,19 @@ function vre/knife/create() {
   sys/dir/mk "cookbooks"
 
   # completition
-  if ${_cmp} ; then
+  answer "Install bash completion?"
+  if success $? ; then
     sys/dir/mk "${vre_knife_cmp}"
     cd "${vre_knife_cmp}"
     git clone ${vre_knife_cmp_bash}
     git clone ${vre_knife_cmp_git} knife
     cd ..
     sys/dir/mk "${_chef}/.completion_cache"
+  fi
+
+  if "${_env}" != "${_remote}" ; then
+    answer "Initialize from ${_remote}?"
+    if failed $? ; then return ; fi
+    sshtx get ${_remote} shf3.vre/${vre_knife_mid}/${_env}
   fi
 }

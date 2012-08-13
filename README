@@ -6,13 +6,19 @@ source $HOME/shf3.vre/bin/shfrc
 Knife:
 http://wiki.opscode.com/display/chef/Installing+Chef+Server+Manually
 
+## Install Chef server on Ubuntu:
 A$ install_chef_server
 A$ install_chef_local_admin
-A$ vre create knife admin macbook
-# TODO: create login package
 
-H$ mkdir knifes
-H$ cd knifes
-H$ vre create knife macbook
+## Create remote admin user
+A$ vre create knife admin macbook
+
+## Create your local knife-block
+H$ mkdir knife
+H$ cd knife
+## Create and get the macbook knife from vadmin
+H$ vre create knife vadmin/macbook
+
+
 H$ sshtx get vadmin shf3.vre/clients/macbook
 
