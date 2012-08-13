@@ -149,7 +149,7 @@ function vre/knife/create() {
 
   # completition
   answer "Install bash completion?"
-  if success $? ; then
+  if succeed $? ; then
     sys/dir/mk "${vre_knife_cmp}"
     cd "${vre_knife_cmp}"
     git clone ${vre_knife_cmp_bash}
@@ -158,7 +158,7 @@ function vre/knife/create() {
     sys/dir/mk "${_chef}/.completion_cache"
   fi
 
-  if "${_env}" != "${_remote}" ; then
+  if test "${_env}" != "${_remote}" ; then
     answer "Initialize from ${_remote}?"
     if failed $? ; then return ; fi
     sshtx get ${_remote} shf3.vre/${vre_knife_mid}/${_env}
