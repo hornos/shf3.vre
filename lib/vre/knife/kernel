@@ -80,7 +80,7 @@ function vre/knife/create() {
         $failure
       fi
       import sys/dir
-      sys/dir/mk "${_user}"
+      sys/dir/mk "${_user}/.chef"
       cd "${_user}"
       answer "Create Knife user ${_user}?"
       if failed $? ; then $failure ; fi
